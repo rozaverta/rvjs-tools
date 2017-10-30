@@ -2,7 +2,7 @@
   "name": "rvjs-tools",
   "version": "1.0.0",
   "description": "Tools for rvjs-* libraries",
-  "main": "src/index.js",
+  "main": "src/tools.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
