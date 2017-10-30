@@ -27,13 +27,62 @@ if (!IsNodeJs) {
 	IsNodeJs = !!(typeof module !== 'undefined' && module.exports);
 }
 
+// html node
+
+var ToString = Object.prototype.toString;
+var isEvent = typeof Event !== 'undefined';
+
+var tof = typeof Node === "undefined" ? "undefined" : _typeof(Node);
+var isNodeNative = tof === 'object',
+    isNodeFunctionNative = false;
+
+if (!isNodeNative && tof === 'function' && typeof document !== "undefined") {
+	isNodeNative = document.createElement("span") instanceof Node;
+	isNodeFunctionNative = isNodeNative;
+}
+
 // polyfils
 
 // array
 
 if (!Array.isArray) {
 	Array.isArray = function (arg) {
-		return Object.prototype.toString.call(arg) === '[object Array]';
+		return ToString.call(arg) === '[object Array]';
+	};
+}
+
+if (!Array.prototype.filter) {
+	Array.prototype.filter = function (fun /*, thisArg*/) {
+		'use strict';
+
+		if (this === void 0 || this === null) {
+			throw new TypeError();
+		}
+
+		var t = Object(this);
+		var len = t.length >>> 0;
+		if (typeof fun !== 'function') {
+			throw new TypeError();
+		}
+
+		var res = [];
+		var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+		for (var i = 0; i < len; i++) {
+			if (i in t) {
+				var val = t[i];
+
+				// ПРИМЕЧАНИЕ: Технически, здесь должен быть Object.defineProperty на
+				//             следующий индекс, поскольку push может зависеть от
+				//             свойств на Object.prototype и Array.prototype.
+				//             Но этот метод новый и коллизии должны быть редкими,
+				//             так что используем более совместимую альтернативу.
+				if (fun.call(thisArg, val, i, t)) {
+					res.push(val);
+				}
+			}
+		}
+
+		return res;
 	};
 }
 
@@ -249,6 +298,94 @@ var Tools = {
 
 		var type = typeof value === "undefined" ? "undefined" : _typeof(value);
 		return type == 'string' || type == 'number' || type == 'boolean';
+	},
+
+
+	/**
+  * @return {boolean}
+  */
+	isWindowElement: function isWindowElement(element) {
+		if (!IsBrowser) {
+			return false;
+		}
+
+		if (window === element) {
+			return true;
+		}
+
+		var type = ToString.call(element);
+		if (type === "[object Window]" || type === "[object DOMWindow]") {
+			return true;
+		}
+
+		if ('self' in element) {
+			//`'self' in element` is true if
+			//the property exists on the object _or_ the prototype
+			//`element.hasOwnProperty('self')` is true only if
+			//the property exists on the object
+			var self = void 0,
+			    hasSelf = element.hasOwnProperty('self');
+
+			try {
+				if (hasSelf) {
+					self = element.self;
+				}
+				delete element.self;
+				if (hasSelf) {
+					element.self = self;
+				}
+			} catch (e) {
+				//IE 7&8 throw an error when window.self is deleted
+				return true;
+			}
+		}
+
+		return false;
+	},
+	isHtmlNodeElement: function isHtmlNodeElement(object) {
+		if (isNodeNative) {
+			return object instanceof Node;
+		} else if (IsBrowser) {
+			return object && (typeof object === "undefined" ? "undefined" : _typeof(object)) === "object" && typeof object.nodeType === "number" && typeof object.nodeName === "string";
+		} else {
+			return false;
+		}
+	},
+	getType: function getType(object) {
+		var type = typeof object === "undefined" ? "undefined" : _typeof(object);
+
+		if (type == 'object') {
+			if (object === null) {
+				return 'null';
+			}
+
+			if (Array.isArray(object)) return 'array';
+			if (object instanceof Date) return 'date';
+			if (object instanceof RegExp) return 'reg-exp';
+			if (isEvent && object instanceof Event) return 'event';
+			if (!isNodeFunctionNative && Tools.isHtmlNodeElement(object)) return 'html-node';
+			if (Tools.isWindowElement(object)) return 'window';
+
+			type = ToString.call(object);
+			if (type === '[object HTMLCollection]' || type === '[object NodeList]') return 'html-collection';
+
+			return 'object';
+		}
+
+		if (isNodeFunctionNative && type == 'function' && Tools.isHtmlNodeElement(object)) {
+			return 'html-node';
+		}
+
+		if (type == 'number') {
+			if (isNaN(object)) {
+				return 'nan';
+			}
+			if (isFinite(object)) {
+				return 'infinity';
+			}
+		}
+
+		return type;
 	}
 };
 
