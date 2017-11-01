@@ -24,7 +24,7 @@ try {
 }
 
 if (!IsNodeJs) {
-	IsNodeJs = !!(typeof module !== 'undefined' && module.exports);
+	IsNodeJs = Boolean(typeof module !== 'undefined' && module.exports);
 }
 
 // html node
@@ -33,12 +33,10 @@ var ToString = Object.prototype.toString;
 var isEvent = typeof Event !== 'undefined';
 
 var tof = typeof Node === "undefined" ? "undefined" : _typeof(Node);
-var isNodeNative = tof === 'object',
-    isNodeFunctionNative = false;
+var isNodeNative = tof === 'object';
 
 if (!isNodeNative && tof === 'function' && typeof document !== "undefined") {
 	isNodeNative = document.createElement("span") instanceof Node;
-	isNodeFunctionNative = isNodeNative;
 }
 
 // polyfils
@@ -276,8 +274,8 @@ var Tools = {
 	isNumber: function isNumber(value) {
 		var tof = typeof value === "undefined" ? "undefined" : _typeof(value);
 
-		if (tof != 'number') {
-			if (tof == 'string') {
+		if (tof !== 'number') {
+			if (tof === 'string') {
 				value /= 1;
 			} else {
 				return false;
@@ -297,7 +295,7 @@ var Tools = {
 		}
 
 		var type = typeof value === "undefined" ? "undefined" : _typeof(value);
-		return type == 'string' || type == 'number' || type == 'boolean';
+		return type === 'string' || type === 'number' || type === 'boolean';
 	},
 
 
@@ -354,7 +352,7 @@ var Tools = {
 	getType: function getType(object) {
 		var type = typeof object === "undefined" ? "undefined" : _typeof(object);
 
-		if (type == 'object') {
+		if (type === 'object') {
 			if (object === null) {
 				return 'null';
 			}
@@ -363,7 +361,7 @@ var Tools = {
 			if (object instanceof Date) return 'date';
 			if (object instanceof RegExp) return 'reg-exp';
 			if (isEvent && object instanceof Event) return 'event';
-			if (!isNodeFunctionNative && Tools.isHtmlNodeElement(object)) return 'html-node';
+			if (Tools.isHtmlNodeElement(object)) return 'html-node';
 			if (Tools.isWindowElement(object)) return 'window';
 
 			type = ToString.call(object);
@@ -372,11 +370,7 @@ var Tools = {
 			return 'object';
 		}
 
-		if (isNodeFunctionNative && type == 'function' && Tools.isHtmlNodeElement(object)) {
-			return 'html-node';
-		}
-
-		if (type == 'number') {
+		if (type === 'number') {
 			if (isNaN(object)) {
 				return 'nan';
 			}

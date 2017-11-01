@@ -1,6 +1,6 @@
 {
   "name": "rvjs-tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tools for rvjs-* libraries",
   "main": "src/tools.js",
   "scripts": {
