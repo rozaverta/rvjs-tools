@@ -84,92 +84,6 @@ if (!Array.prototype.filter) {
 	};
 }
 
-// matches, closest
-
-if (IsBrowser && window.Element) {
-	var proto = Element.prototype;
-
-	if (!proto.matches) {
-		proto.matches = proto.matchesSelector || proto.mozMatchesSelector || proto.msMatchesSelector || proto.oMatchesSelector || proto.webkitMatchesSelector || function (selector) {
-			var matches = (this.document || this.ownerDocument).querySelectorAll(selector),
-			    i = matches.length;
-			while (--i >= 0 && matches.item(i) !== this) {}
-			return i > -1;
-		};
-	}
-
-	if (!proto.closest) {
-		proto.closest = function (selector) {
-			var node = this;
-			while (node) {
-				if (node.matches(selector)) return node;else node = node.parentElement;
-			}
-			return null;
-		};
-	}
-}
-
-// Object is Polyfill
-// @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
-
-if (!Object.is) {
-	Object.is = function (x, y) {
-		// SameValue algorithm
-		if (x === y) {
-			// Steps 1-5, 7-10
-			// Steps 6.b-6.e: +0 != -0
-			return x !== 0 || 1 / x === 1 / y;
-		} else {
-			// Step 6.a: NaN == NaN
-			return x !== x && y !== y;
-		}
-	};
-}
-
-// @see https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-if (!Object.assign) {
-	Object.defineProperty(Object, 'assign', {
-
-		enumerable: false,
-		configurable: true,
-		writable: true,
-		value: function value(target, firstSource) {
-
-			'use strict';
-
-			if (target === undefined || target === null) {
-				throw new TypeError('Cannot convert first argument to object');
-			}
-
-			var to = Object(target);
-			for (var i = 1; i < arguments.length; i++) {
-				var nextSource = arguments[i];
-				if (nextSource === undefined || nextSource === null) {
-					continue;
-				}
-
-				var keysArray = Object.keys(Object(nextSource));
-				for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
-					var nextKey = keysArray[nextIndex];
-					var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
-					if (desc !== undefined && desc.enumerable) {
-						to[nextKey] = nextSource[nextKey];
-					}
-				}
-			}
-
-			return to;
-		}
-	});
-}
-
-if (!String.prototype.trim) {
-	// Вырезаем BOM и неразрывный пробел
-	String.prototype.trim = function () {
-		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-	};
-}
-
 if (!Array.prototype.map) {
 	Array.prototype.map = function (callback, thisArg) {
 
@@ -255,6 +169,92 @@ if (!Array.prototype.map) {
 
 		// 9. Вернём A.
 		return A;
+	};
+}
+
+// matches, closest
+
+if (IsBrowser && window.Element) {
+	var proto = Element.prototype;
+
+	if (!proto.matches) {
+		proto.matches = proto.matchesSelector || proto.mozMatchesSelector || proto.msMatchesSelector || proto.oMatchesSelector || proto.webkitMatchesSelector || function (selector) {
+			var matches = (this.document || this.ownerDocument).querySelectorAll(selector),
+			    i = matches.length;
+			while (--i >= 0 && matches.item(i) !== this) {}
+			return i > -1;
+		};
+	}
+
+	if (!proto.closest) {
+		proto.closest = function (selector) {
+			var node = this;
+			while (node) {
+				if (node.matches(selector)) return node;else node = node.parentElement;
+			}
+			return null;
+		};
+	}
+}
+
+// Object is Polyfill
+// @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+
+if (!Object.is) {
+	Object.is = function (x, y) {
+		// SameValue algorithm
+		if (x === y) {
+			// Steps 1-5, 7-10
+			// Steps 6.b-6.e: +0 != -0
+			return x !== 0 || 1 / x === 1 / y;
+		} else {
+			// Step 6.a: NaN == NaN
+			return x !== x && y !== y;
+		}
+	};
+}
+
+// @see https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+if (!Object.assign) {
+	Object.defineProperty(Object, 'assign', {
+
+		enumerable: false,
+		configurable: true,
+		writable: true,
+		value: function value(target, firstSource) {
+
+			'use strict';
+
+			if (target === undefined || target === null) {
+				throw new TypeError('Cannot convert first argument to object');
+			}
+
+			var to = Object(target);
+			for (var i = 1; i < arguments.length; i++) {
+				var nextSource = arguments[i];
+				if (nextSource === undefined || nextSource === null) {
+					continue;
+				}
+
+				var keysArray = Object.keys(Object(nextSource));
+				for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+					var nextKey = keysArray[nextIndex];
+					var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+					if (desc !== undefined && desc.enumerable) {
+						to[nextKey] = nextSource[nextKey];
+					}
+				}
+			}
+
+			return to;
+		}
+	});
+}
+
+if (!String.prototype.trim) {
+	// Вырезаем BOM и неразрывный пробел
+	String.prototype.trim = function () {
+		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 	};
 }
 
@@ -380,6 +380,35 @@ var Tools = {
 		}
 
 		return type;
+	},
+	toString: function toString(object) {
+		var tof = typeof object === "undefined" ? "undefined" : _typeof(object);
+
+		if (tof === 'function') {
+			tof = _typeof(object = object());
+		}
+
+		if (tof === 'string') {
+			return object;
+		}
+
+		if (tof === null || tof === 'undefined') {
+			return '';
+		}
+
+		if (tof === 'boolean') {
+			return object ? '1' : '0';
+		}
+
+		if (tof === 'number') {
+			return isNaN(object) || !isFinite(object) ? '' : String(object);
+		}
+
+		if (tof === 'object' && object.hasOwnProperty('toString') && typeof object.toString === 'function') {
+			return object + "";
+		}
+
+		return ToString.call(object);
 	}
 };
 
