@@ -23,3 +23,4 @@ if( Tools.isBrowser ) {
 | `isWindowElement(object)` | Boolean | Object is window |
 | `isHtmlNodeElement(object)` | Boolean | Object is html node element |
 | `getType(object)` | String | Result values: function, object, string, boolean, number, undefined, symbol, null, array, date, reg-exp, event, html-node, window, html-collection, nan, infinity |
+| `toString(object)` | String | Convert object to valid string |
